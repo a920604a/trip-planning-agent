@@ -1,21 +1,11 @@
-import json
 import requests
-import subprocess
-import time
-import uuid
 import os
 
 from google.adk.agents import LlmAgent
-from google.adk.agents.remote_a2a_agent import (
-    RemoteA2aAgent,
-    AGENT_CARD_WELL_KNOWN_PATH,
-)
 from google.genai import types
 
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.models.google_llm import Gemini
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 # Hide additional warnings in the notebook
