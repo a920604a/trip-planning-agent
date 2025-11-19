@@ -5,10 +5,13 @@ from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 
 from google.genai import types
-
-from google.adk.tools import load_memory, preload_memory
-from flow import plan_day_trip_tool
-
+from google.adk.agents.remote_a2a_agent import (
+    RemoteA2aAgent,
+    AGENT_CARD_WELL_KNOWN_PATH,
+)
+from google.adk.tools import preload_memory
+from tools.day_trip import plan_day_trip_tool
+from retry_config import retry_config
 
 
 
@@ -25,14 +28,14 @@ print("✅ Auto-memory callback ready.")
 
 
 # Wait for server to start (poll until it responds)
-max_attempts = 30
+max_attempts = 5
 for attempt in range(max_attempts):
     try:
         response = requests.get(
             "http://localhost:8001/.well-known/agent-card.json", timeout=1
         )
         if response.status_code == 200:
-            print(f"\n✅ Product Catalog Agent server is running!")
+            print(f"\n✅ Weather Agent server is running!")
             print(f"   Server URL: http://localhost:8001")
             print(f"   Agent card: http://localhost:8001/.well-known/agent-card.json")
             print(response.json())
@@ -45,14 +48,14 @@ else:
 
 
 # Wait for server to start (poll until it responds)
-max_attempts = 30
+max_attempts = 5
 for attempt in range(max_attempts):
     try:
         response = requests.get(
             "http://localhost:8001/.well-known/agent-card.json", timeout=1
         )
         if response.status_code == 200:
-            print(f"\n✅ Product Catalog Agent server is running!")
+            print(f"\n✅ Maps Agent server is running!")
             print(f"   Server URL: http://localhost:8002")
             print(f"   Agent card: http://localhost:8002/.well-known/agent-card.json")
             print(response.json())
@@ -64,11 +67,6 @@ else:
     print("\n⚠️  Server may not be ready yet. Check manually if needed.")
 
 
-
-from google.adk.agents.remote_a2a_agent import (
-    RemoteA2aAgent,
-    AGENT_CARD_WELL_KNOWN_PATH,
-)
 
 # Weather Agent (Remote)
 remote_weather_agent = RemoteA2aAgent(
@@ -84,12 +82,6 @@ remote_maps_agent = RemoteA2aAgent(
     agent_card=f"http://localhost:8002{AGENT_CARD_WELL_KNOWN_PATH}",
 )
 
-retry_config = types.HttpRetryOptions(
-    attempts=5,  # Maximum retry attempts
-    exp_base=7,  # Delay multiplier
-    initial_delay=1,
-    http_status_codes=[429, 500, 503, 504],  # Retry on these HTTP errors  
-)
 
 
 orchestrator = LlmAgent(

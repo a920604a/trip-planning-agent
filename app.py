@@ -1,16 +1,9 @@
 
-import requests
-import time
-from google.adk.agents import LlmAgent
-from google.adk.models.google_llm import Gemini
-
 from google.genai import types
 
 from google.adk.sessions import InMemorySessionService
 from google.adk.memory import InMemoryMemoryService
-from google.adk.tools import load_memory, preload_memory
-from flow import plan_day_trip_tool
-from orch_server import orchestrator
+from agents.orch_server import orchestrator
 from google.adk.runners import Runner
 
 import os
@@ -29,7 +22,6 @@ except Exception as e:
         f"🔑 Authentication Error: Please make sure you have added 'GOOGLE_API_KEY' to your Kaggle secrets. Details: {e}"
     )
 
-from google.adk.runners import InMemoryRunner
 
 # --- 建立 Session 與 Memory ---
 session_service = InMemorySessionService()
@@ -96,7 +88,7 @@ async def main():
     
     
         
-    app_name = "support_app"
+    app_name = "agents"
     user_id = "demo_user"
     session_id = f"demo_session_{uuid.uuid4().hex[:8]}"
 
