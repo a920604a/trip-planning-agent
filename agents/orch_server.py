@@ -9,7 +9,7 @@ from google.adk.agents.remote_a2a_agent import (
     RemoteA2aAgent,
     AGENT_CARD_WELL_KNOWN_PATH,
 )
-from google.adk.tools import preload_memory
+from google.adk.tools import preload_memory, google_search
 from tools.day_trip import plan_day_trip_tool
 from retry_config import retry_config
 
@@ -27,46 +27,22 @@ print("✅ Auto-memory callback ready.")
 
 
 
-# Wait for server to start (poll until it responds)
-max_attempts = 5
-for attempt in range(max_attempts):
-    try:
-        response = requests.get(
-            "http://localhost:8001/.well-known/agent-card.json", timeout=1
-        )
-        if response.status_code == 200:
-            print(f"\n✅ Weather Agent server is running!")
-            print(f"   Server URL: http://localhost:8001")
-            print(f"   Agent card: http://localhost:8001/.well-known/agent-card.json")
-            print(response.json())
-            break
-    except requests.exceptions.RequestException:
-        time.sleep(5)
-        print(".", end="", flush=True)
-else:
-    print("\n⚠️  Server may not be ready yet. Check manually if needed.")
+def check_server_ready(url: str, max_attempts: int = 5, delay: int = 2) -> bool:
+    """Check if a server is ready by polling its URL."""
+    for attempt in range(max_attempts):
+        try:
+            response = requests.get(url, timeout=1)
+            if response.status_code == 200:
+                print(f"\n✅ {url} Server is running!")
+                return True
+        except requests.RequestException:
+            print()
+            time.sleep(delay)
+    return False
 
 
-# Wait for server to start (poll until it responds)
-max_attempts = 5
-for attempt in range(max_attempts):
-    try:
-        response = requests.get(
-            "http://localhost:8001/.well-known/agent-card.json", timeout=1
-        )
-        if response.status_code == 200:
-            print(f"\n✅ Maps Agent server is running!")
-            print(f"   Server URL: http://localhost:8002")
-            print(f"   Agent card: http://localhost:8002/.well-known/agent-card.json")
-            print(response.json())
-            break
-    except requests.exceptions.RequestException:
-        time.sleep(5)
-        print(".", end="", flush=True)
-else:
-    print("\n⚠️  Server may not be ready yet. Check manually if needed.")
-
-
+check_server_ready("http://localhost:8001/.well-known/agent-card.json")
+check_server_ready("http://localhost:8002/.well-known/agent-card.json")
 
 # Weather Agent (Remote)
 remote_weather_agent = RemoteA2aAgent(
@@ -85,9 +61,9 @@ remote_maps_agent = RemoteA2aAgent(
 
 
 orchestrator = LlmAgent(
-    model=Gemini(model="gemini-2.0-flash", retry_options=retry_config),
+    model=Gemini(model="gemini-2.5-flash", retry_options=retry_config),
     name="trip_planner_agent",
-    description="An orchestrator that plans trips using maps and weather remote A2A agents.",
+    description="An orchestrator that plans trips using maps and weather remote A2A agents. Answer questions using Google Search when needed. Always cite sources.",
     instruction="""
 你是一個旅遊行程規劃助理。
 
@@ -99,10 +75,9 @@ orchestrator = LlmAgent(
 - 若使用者給地點關鍵字，請呼叫 maps_agent。
 - 若使用者給城市＋日期，請呼叫 weather_agent。
 - 最後整合地點＋天氣，提供合理的旅遊建議。
-當行程超過 3 個景點時，需要人工批准。
 回覆請保持簡潔、自然。
 """,
-    tools=[preload_memory, plan_day_trip_tool], 
+    tools=[preload_memory], 
     after_agent_callback=auto_save_to_memory,  # 🔥 每次 agent turn 都會自動存
     sub_agents=[remote_maps_agent, remote_weather_agent],  # ⭐ 正在這裡！
 )

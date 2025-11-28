@@ -1,12 +1,19 @@
+
+import os
+os.environ["DISABLE_AIOHTTP_TRANSPORT"] = "True"
+
+
 import requests
 from google.adk.agents import LlmAgent
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.models.google_llm import Gemini
 from retry_config import retry_config
+from google.adk.runners import InMemoryRunner
 
 
 
 def weather_lookup(location: str, date: str) -> dict:
+    print("weather_lookup called with location:", location, "date:", date)
     # Geocoding
     geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={location}&count=1&language=zh"
     geo_resp = requests.get(geo_url).json()
@@ -43,7 +50,7 @@ def weather_lookup(location: str, date: str) -> dict:
 
 weather_agent = LlmAgent(
     name="weather_agent",
-    model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+    model=Gemini(model="gemini-2.5-flash", retry_options=retry_config),
     instruction="""
 你是一個天氣助理。
 
@@ -63,3 +70,13 @@ weather_agent = LlmAgent(
 
 
 app = to_a2a(weather_agent, port=8001)
+
+
+async def test_runner():
+    runner = InMemoryRunner(agent=weather_agent)
+    
+    response = await runner.run_debug("請告訴我 Taipei 2025-11-29 的天氣.")
+    
+import asyncio
+if __name__ == "__main__":    
+    asyncio.run(test_runner())

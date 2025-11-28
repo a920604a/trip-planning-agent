@@ -29,9 +29,9 @@ function Start-Servers {
     # 設定環境變數
     try {
         $GOOGLE_API_KEY = [System.Environment]::GetEnvironmentVariable("GOOGLE_API_KEY")
-        $GOOGLE_MAPS_API_KEY = [System.Environment]::GetEnvironmentVariable("GOOGLE_MAPS_API_KEY")
+        $GOOGLE_MAP_API_KEY = [System.Environment]::GetEnvironmentVariable("GOOGLE_MAP_API_KEY")
         [System.Environment]::SetEnvironmentVariable("GOOGLE_API_KEY", $GOOGLE_API_KEY, "Process")
-        [System.Environment]::SetEnvironmentVariable("GOOGLE_MAPS_API_KEY", $GOOGLE_MAPS_API_KEY, "Process")
+        [System.Environment]::SetEnvironmentVariable("GOOGLE_MAP_API_KEY", $GOOGLE_MAP_API_KEY, "Process")
         Write-Host "✅ Setup and authentication complete."
     } catch {
         Write-Host "🔑 Authentication Error: $_"
@@ -50,5 +50,5 @@ function Start-Servers {
 switch ($action.ToLower()) {
     "start" { Start-Servers }
     "stop"  { Stop-Servers }
-    default { Write-Host "Invalid action. Use 'start' or 'stop'." }
+    default { Start-Servers}
 }

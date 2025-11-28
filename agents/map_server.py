@@ -1,13 +1,16 @@
 import requests
 import os
+os.environ["DISABLE_AIOHTTP_TRANSPORT"] = "True"
 
 from google.adk.agents import LlmAgent
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.models.google_llm import Gemini
 from retry_config import retry_config
+from google.adk.runners import InMemoryRunner
 
 
 def places_text_search(query: str) -> dict:
+    print("places_text_search called with query:", query)
     """
     使用 Google Maps Places Text Search 查詢地點
     query: 查詢字串，例如 "Taipei 101"
@@ -15,7 +18,7 @@ def places_text_search(query: str) -> dict:
     url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
     params = {
         "query": query,
-        "key": os.environ["GOOGLE_MAPS_API_KEY"],
+        "key": os.environ["GOOGLE_MAP_API_KEY"],
         "language": "zh-TW",  # 中文  
     }
 
@@ -41,7 +44,7 @@ def places_text_search(query: str) -> dict:
 
 maps_agent = LlmAgent(
     name="maps_agent",
-    model=Gemini(model="gemini-2.5-flash-lite", retry_options=retry_config),
+    model=Gemini(model="gemini-2.5-flash", retry_options=retry_config),
     instruction="""
 你是一個地圖查詢助理。
 
@@ -58,3 +61,13 @@ maps_agent = LlmAgent(
 
 
 app = to_a2a(maps_agent, port=8002)
+
+
+async def test_runner():
+    runner = InMemoryRunner(agent=maps_agent)
+    
+    response = await runner.run_debug("請幫我查 Taipei 101 附近的餐廳")
+    
+import asyncio
+if __name__ == "__main__":    
+    asyncio.run(test_runner())
