@@ -36,7 +36,6 @@ def check_server_ready(url: str, max_attempts: int = 5, delay: int = 2) -> bool:
                 print(f"\n✅ {url} Server is running!")
                 return True
         except requests.RequestException:
-            print()
             time.sleep(delay)
     return False
 
@@ -63,7 +62,7 @@ remote_maps_agent = RemoteA2aAgent(
 orchestrator = LlmAgent(
     model=Gemini(model="gemini-2.5-flash", retry_options=retry_config),
     name="trip_planner_agent",
-    description="An orchestrator that plans trips using maps and weather remote A2A agents. Answer questions using Google Search when needed. Always cite sources.",
+    description="An orchestrator that plans trips using maps and weather remote A2A agents.",
     instruction="""
 你是一個旅遊行程規劃助理。
 
