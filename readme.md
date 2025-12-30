@@ -1,3 +1,4 @@
+```shell
 python -m venv .venv
 .\.venv\Scripts\activate
 
@@ -11,7 +12,7 @@ $env:GOOGLE_API_KEY = ""
 python app.py
 ./start_agents.ps1 stop
 
-
+```
 
 ## Key Features
 | Feature                                                                  | 有／無 | 理由 / 說明                                                                                                                                                                                                                        |
